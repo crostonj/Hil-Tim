@@ -1,16 +1,128 @@
 # GitHub Copilot Instructions: Hotel Website Development
 
 ## Project Overview
-**Project**: Hotel Website with Booking System  
+**Project**: Elegant Oahu Hotel Website with User Authentication  
 **Tech Stack**: Vite + React 18 + TypeScript + CSS Modules  
-**Architecture**: Frontend SPA with mock data, progressive enhancement ready for backend integration  
+**Architecture**: Frontend SPA with mock data services, progressive enhancement ready for database integration  
 **Constitutional Requirements**: Minimal dependencies, performance-first, accessibility-compliant
+**Domain Context**: Hawaiian luxury hotel in Oahu with cultural sensitivity and elegant design principles
 
 ## Code Style and Patterns
 
 ### TypeScript Usage
-- **Strict Mode**: Always use TypeScript strict mode with explicit types
-- **Interface Definitions**: Prefer interfaces over types for object shapes
+- **Strict Mode**: Always use TypeScript strict mode with ex### Project-Specific Context
+
+### Hotel Domain Knowledge
+- **Room Types**: standard, deluxe, suite, penthouse, family
+- **Booking Flow**: dates → rooms → packages → guest info → payment → confirmation
+- **Package Categories**: romance, family, business, wellness, dining, adventure, seasonal
+- **Amenity Categories**: recreation, dining, business, wellness, convenience, entertainment, family
+- **User Types**: anonymous guests (booking without account) and registered users (with login/profile)
+
+### Business Rules
+- Minimum stay requirements may apply to certain room types
+- Package compatibility depends on room type and dates
+- Pricing is dynamic based on demand and seasonality
+- Guest capacity must not exceed room capacity limits
+- Booking modifications have time restrictions and fees
+- Users can book without registration (guest booking) or with account (user booking)
+- Registered users get pre-filled forms, booking history, and preferences
+
+### Hawaiian Cultural Context
+- **Design Philosophy**: Elegant luxury that respects Hawaiian culture, not stereotypical tropical
+- **Color Palette**: Ocean blues (#0077be), sunset oranges (#ff6b35), tropical greens (#2d5f3f)
+- **Cultural Sensitivity**: Authentic representation, avoid appropriation, emphasize natural beauty
+- **Location Context**: Oahu-specific landmarks, weather patterns, cultural activities
+
+### Data Persistence Strategy
+- **Local Storage**: User sessions, booking drafts, user preferences, search filters
+- **Session Storage**: Temporary UI state, current search results, form data
+- **Mock Data Services**: TypeScript services with realistic Hawaiian hotel data
+- **Future API**: All services designed with interfaces for easy database migration
+
+### Authentication Patterns
+```typescript
+// Context-based authentication state management
+interface AuthState {
+  user: User | null;
+  session: Session | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Support both user and guest booking flows
+interface BookingGuest {
+  type: 'user' | 'guest';
+  userId?: string;
+  guestId?: string;
+  contactInfo: ContactInfo;
+  partySize: PartyDetails;
+}
+
+// Protected route pattern
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { state } = useAuth();
+  
+  if (state.isLoading) return <LoadingSpinner />;
+  if (!state.isAuthenticated) return <Navigate to="/login" />;
+  
+  return <>{children}</>;
+}
+```
+
+### Mock Service Patterns
+```typescript
+// Service interface for future database compatibility
+interface RoomService {
+  getAvailableRooms(checkIn: Date, checkOut: Date): Promise<ServiceResponse<Room[]>>;
+  getRoomDetails(roomId: string): Promise<ServiceResponse<Room>>;
+  // ... other methods
+}
+
+// Mock implementation with realistic data
+class MockRoomService implements RoomService {
+  private rooms: Room[] = [
+    {
+      id: 'deluxe-ocean-301',
+      name: 'Deluxe Ocean View',
+      type: 'deluxe',
+      description: 'Stunning ocean views from your private lanai...',
+      // Hawaiian-themed room data
+    }
+  ];
+  
+  async getAvailableRooms(checkIn: Date, checkOut: Date): Promise<ServiceResponse<Room[]>> {
+    // Simulate API delay and realistic availability logic
+    await new Promise(resolve => setTimeout(resolve, 500));
+    // Return available rooms based on mock booking data
+  }
+}
+```
+
+### Booking State Management
+```typescript
+// Complex booking state with useReducer
+type BookingAction = 
+  | { type: 'SELECT_DATES'; payload: { checkIn: Date; checkOut: Date } }
+  | { type: 'SELECT_ROOM'; payload: string }
+  | { type: 'ADD_PACKAGE'; payload: string }
+  | { type: 'UPDATE_GUEST_INFO'; payload: Partial<ContactInfo> }
+  | { type: 'CALCULATE_PRICING'; payload: BookingPricing };
+
+function bookingReducer(state: BookingState, action: BookingAction): BookingState {
+  switch (action.type) {
+    case 'SELECT_DATES':
+      return {
+        ...state,
+        selectedDates: action.payload,
+        selectedRoomId: null, // Reset room when dates change
+        pricing: null, // Recalculate pricing
+      };
+    // ... other cases
+  }
+}
+```nterface Definitions**: Prefer interfaces over types for object shapes
 - **Generic Constraints**: Use generic constraints for reusable components
 - **Utility Types**: Leverage TypeScript utility types (Partial, Pick, Omit)
 
